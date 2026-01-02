@@ -1,30 +1,23 @@
 import { NextResponse } from "next/server";
-import clientPromise from "@/lib/mongodb";
+import dbConnect from "./../../../lib/mongodb"; 
+import Registration from "./../../../models/Registration";
 
 export async function POST(req: Request) {
   try {
+    console.log("API hit ✅");
+
+    await dbConnect();
+    console.log("MongoDB qoşuldu ✅");
+
     const body = await req.json();
+    console.log("Gələn data:", body);
 
-    if (!body.fullName || !body.email || !body.university) {
-      return NextResponse.json(
-        { message: "Zəhmət olmasa bütün sahələri doldurun" },
-        { status: 400 }
-      );
-    }
+    const newUser = await Registration.create(body);
+    console.log("MongoDB-yə yazıldı ✅");
 
-    const client = await clientPromise;
-    const db = client.db("hackathon_registration");
-    const result = await db.collection("registrations").insertOne(body);
-
-    return NextResponse.json({
-      message: "Qeydiyyat uğurludur 🎉",
-      data: result,
-    });
-  } catch (error) {
-    console.error(error);
-    return NextResponse.json(
-      { message: "Xəta baş verdi" },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: true });
+  } catch (error: any) {
+    console.error("API ERROR ❌", error);
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }

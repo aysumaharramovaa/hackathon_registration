@@ -1,22 +1,25 @@
-import { MongoClient } from "mongodb";
+import mongoose from "mongoose";
 
-const uri = process.env.MONGODB_URI!;
-let client: MongoClient;
-let clientPromise: Promise<MongoClient>;
+const MONGODB_URI = process.env.MONGODB_URI!;
 
-if (!process.env.MONGODB_URI) {
-  throw new Error("Please add your Mongo URI to .env.local");
-}
+if (!MONGODB_URI) throw new Error("MONGODB_URI tapılmadı");
 
-if (process.env.NODE_ENV === "development") {
-  if (!(global as any)._mongoClientPromise) {
-    client = new MongoClient(uri);
-    (global as any)._mongoClientPromise = client.connect();
+let cached = (global as any).mongoose || { conn: null, promise: null };
+
+async function dbConnect() {
+  if (cached.conn) return cached.conn;
+
+  if (!cached.promise) {
+    cached.promise = mongoose.connect(MONGODB_URI, {
+      ssl: true,
+      tlsAllowInvalidCertificates: true, // development üçün
+    }).then((mongoose) => mongoose);
   }
-  clientPromise = (global as any)._mongoClientPromise;
-} else {
-  client = new MongoClient(uri);
-  clientPromise = client.connect();
+
+  cached.conn = await cached.promise;
+  return cached.conn;
 }
 
-export default clientPromise;
+(global as any).mongoose = cached;
+
+export default dbConnect;
