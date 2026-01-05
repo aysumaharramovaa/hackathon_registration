@@ -1,18 +1,10 @@
-// pages/api/register.ts
-import type { NextApiRequest, NextApiResponse } from 'next';
-import { supabase } from '../../lib/supabase';
+// app/api/register/route.ts
+import { supabase } from '@/lib/supabase';
+import { NextRequest, NextResponse } from 'next/server';
 
-type Member = {
-  name: string;
-  email: string;
-  phone: string;
-};
-
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
-
+export async function POST(req: NextRequest) {
   try {
-    const { team_name, members, solution_name, solution_desc, file_url } = req.body;
+    const { team_name, members, solution_name, solution_desc, file_url } = await req.json();
 
     const data = {
       team_name,
@@ -32,11 +24,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const { error } = await supabase.from('registrations').insert([data]);
 
-    if (error) return res.status(500).json({ error: error.message });
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-    res.status(200).json({ message: 'Qeydiyyat uğurla tamamlandı!' });
+    return NextResponse.json({ message: 'Qeydiyyat uğurla tamamlandı!' });
   } catch (err) {
     console.log(err);
-    res.status(500).json({ error: 'Xəta baş verdi' });
+    return NextResponse.json({ error: 'Xəta baş verdi' }, { status: 500 });
   }
 }
