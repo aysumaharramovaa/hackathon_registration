@@ -1,133 +1,245 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
+import { useState, ChangeEvent } from "react";
 
-export default function Home() {
+type Member = {
+  name: string;
+  email: string;
+  phone: string;
+};
+
+export default function HackathonForm() {
   const [success, setSuccess] = useState(false);
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [teamName, setTeamName] = useState('');
+  const [teamName, setTeamName] = useState("");
+  const [members, setMembers] = useState<Member[]>([
+    { name: "", email: "", phone: "" },
+  ]);
+  const [solutionName, setSolutionName] = useState("");
+  const [solutionDesc, setSolutionDesc] = useState("");
+  const [file, setFile] = useState<File | null>(null);
+
+  const handleMemberChange = (
+    index: number,
+    field: keyof Member,
+    value: string
+  ) => {
+    setMembers((prev) => {
+      const updated = [...prev];
+      updated[index] = { ...updated[index], [field]: value };
+      return updated;
+    });
+  };
+
+  const addMember = () => {
+    if (members.length < 3) {
+      setMembers([...members, { name: "", email: "", phone: "" }]);
+    } else {
+      alert("Maximum 3 üzv əlavə edilə bilər");
+    }
+  };
 
   const submit = async () => {
-    if (!name || !email || !teamName) {
-      alert('Bütün sahələri doldurun');
+    if (!teamName || !solutionName || !solutionDesc) {
+      alert("Komanda adı, həll və izzah doldurulmalıdır");
       return;
     }
+    for (let i = 0; i < members.length; i++) {
+      if (!members[i].name || !members[i].email || !members[i].phone) {
+        alert(`Üzv ${i + 1} üçün bütün sahələri doldurun`);
+        return;
+      }
+    }
 
-    const res = await fetch('/api/register', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        name,
-        email,
-        team_name: teamName,
-      }),
-    });
+    const data: any = {
+      team_name: teamName,
+      members,
+      solution_name: solutionName,
+      solution_desc: solutionDesc,
+    };
 
-    if (res.ok) {
-      setSuccess(true);
-      setName('');
-      setEmail('');
-      setTeamName('');
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        if (!reader.result) return alert("Fayl oxunmadı!");
+        const base64 = reader.result.toString().split(",")[1];
+        const uploadRes = await fetch("/api/upload", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ fileBase64: base64, fileName: file.name }),
+        });
+        const { url } = await uploadRes.json();
+        data.file_url = url;
+
+        const res = await fetch("/api/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        });
+
+        if (res.ok) resetForm();
+        else alert("Xəta baş verdi");
+      };
+      reader.readAsDataURL(file);
     } else {
-      alert('Xəta baş verdi');
+      const res = await fetch("/api/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (res.ok) resetForm();
+      else alert("Xəta baş verdi");
+    }
+  };
+
+  const resetForm = () => {
+    setSuccess(true);
+    setTeamName("");
+    setMembers([{ name: "", email: "", phone: "" }]);
+    setSolutionName("");
+    setSolutionDesc("");
+    setFile(null);
+  };
+
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setFile(e.target.files[0]);
+    } else {
+      setFile(null);
     }
   };
 
   return (
-    <div style={{ background: '#0f172a', color: '#fff', fontFamily: 'sans-serif', minHeight: '100vh' }}>
- 
+    <div
+      style={{
+        fontFamily: "sans-serif",
+        color: "#fff",
+        background: "#0f172a",
+        minHeight: "100vh",
+        padding: "40px",
+      }}
+    >
       {success && (
-        <div style={{
-          background: 'linear-gradient(90deg,#22c55e,#16a34a)',
-          padding: '16px',
-          textAlign: 'center',
-          fontWeight: '600',
-        }}>
+        <div
+          style={{
+            background: "linear-gradient(90deg,#22c55e,#16a34a)",
+            padding: "16px",
+            textAlign: "center",
+            fontWeight: "600",
+            marginBottom: "20px",
+          }}
+        >
           🎉 Qeydiyyat uğurla tamamlandı! Hackathonda görüşərik 🚀
         </div>
       )}
 
+      <h1 style={{ textAlign: "center", marginBottom: "24px" }}>
+        Hackathon Qeydiyyatı
+      </h1>
 
-      <section style={{
-        minHeight: '70vh',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        textAlign: 'center',
-        padding: '40px'
-      }}>
-        <h1 style={{ fontSize: '46px', marginBottom: '20px' }}>🚀 FinTech Hackathon 2026</h1>
-        <p style={{ fontSize: '18px', color: '#cbd5f5', maxWidth: '600px', margin: '0 auto 30px' }}>
-          Gələcəyin maliyyə texnologiyalarını yarat, komandanla yarış,
-          mentorlarla tanış ol və real problemləri həll et.
-        </p>
-        <p style={{ fontSize: '14px', color: '#94a3b8' }}>
-          Form aşağıdadır, doldur və qeydiyyatı tamamla 👇
-        </p>
-      </section>
+      <div style={{ maxWidth: "600px", margin: "0 auto" }}>
+        <input
+          placeholder="Komanda adı"
+          value={teamName}
+          onChange={(e) => setTeamName(e.target.value)}
+          style={inputStyle}
+        />
 
-      <section style={{
-        background: '#020617',
-        padding: '80px 20px',
-        display: 'flex',
-        justifyContent: 'center',
-      }}>
-        <div style={{
-          width: '100%',
-          maxWidth: '420px',
-          border: '1px solid #1e293b',
-          borderRadius: '12px',
-          padding: '32px',
-        }}>
-          <h2 style={{ textAlign: 'center', marginBottom: '24px' }}>Hackathon Qeydiyyatı</h2>
-          
-          <input
-            placeholder="Ad Soyad"
-            value={name}
-            onChange={e => setName(e.target.value)}
-            style={inputStyle}
-          />
-          <input
-            placeholder="Email"
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-            style={inputStyle}
-          />
-          <input
-            placeholder="Komanda adı"
-            value={teamName}
-            onChange={e => setTeamName(e.target.value)}
-            style={inputStyle}
-          />
-          <button
-            onClick={submit}
+        <h3 style={{ marginTop: "20px" }}>Komanda üzvləri</h3>
+        {members.map((member, index) => (
+          <div
+            key={index}
             style={{
-              width: '100%',
-              marginTop: '20px',
-              padding: '14px',
-              background: 'linear-gradient(90deg,#22c55e,#16a34a)',
-              border: 'none',
-              borderRadius: '8px',
-              fontWeight: '600',
-              cursor: 'pointer',
+              marginBottom: "12px",
+              border: "1px solid #1e293b",
+              borderRadius: "8px",
+              padding: "12px",
             }}
           >
-            Qeydiyyatı tamamla
+            <input
+              placeholder={`Üzv ${index + 1} Ad Soyad`}
+              value={member.name}
+              onChange={(e) =>
+                handleMemberChange(index, "name", e.target.value)
+              }
+              style={inputStyle}
+            />
+            <input
+              placeholder={`Üzv ${index + 1} Email`}
+              value={member.email}
+              onChange={(e) =>
+                handleMemberChange(index, "email", e.target.value)
+              }
+              style={inputStyle}
+            />
+            <input
+              placeholder={`Üzv ${index + 1} Telefon`}
+              value={member.phone}
+              onChange={(e) =>
+                handleMemberChange(index, "phone", e.target.value)
+              }
+              style={inputStyle}
+            />
+          </div>
+        ))}
+
+        {members.length < 3 && (
+          <button onClick={addMember} style={smallButtonStyle}>
+            + Üzv əlavə et
           </button>
-        </div>
-      </section>
+        )}
+
+        <input
+          placeholder="Hansı FinTech həllini təqdim edirsiniz"
+          value={solutionName}
+          onChange={(e) => setSolutionName(e.target.value)}
+          style={inputStyle}
+        />
+
+        <textarea
+          placeholder="FinTech həlliniz haqqında izzah (max 5 cümlə)"
+          value={solutionDesc}
+          onChange={(e) => setSolutionDesc(e.target.value)}
+          style={{ ...inputStyle, height: "100px", resize: "none" }}
+        />
+
+        <input
+          type="file"
+          onChange={handleFileChange}
+          style={{ marginTop: "12px", color: "#fff" }}
+        />
+
+        <button onClick={submit} style={submitButtonStyle}>
+          Qeydiyyatı tamamla
+        </button>
+      </div>
     </div>
   );
 }
 
-const inputStyle = {
-  width: '100%',
-  padding: '12px',
-  marginBottom: '14px',
-  borderRadius: '8px',
-  border: '1px solid #1e293b',
-  background: '#020617',
-  color: '#fff',
+const inputStyle: React.CSSProperties = {
+  width: "100%",
+  padding: "12px",
+  marginBottom: "8px",
+  borderRadius: "8px",
+  border: "1px solid #1e293b",
+  background: "#020617",
+  color: "#fff",
+};
+const smallButtonStyle: React.CSSProperties = {
+  padding: "8px 16px",
+  marginBottom: "12px",
+  borderRadius: "8px",
+  border: "none",
+  background: "#6366f1",
+  cursor: "pointer",
+};
+const submitButtonStyle: React.CSSProperties = {
+  width: "100%",
+  padding: "14px",
+  marginTop: "12px",
+  borderRadius: "8px",
+  border: "none",
+  fontWeight: "600",
+  background: "linear-gradient(90deg,#22c55e,#16a34a)",
+  cursor: "pointer",
 };
