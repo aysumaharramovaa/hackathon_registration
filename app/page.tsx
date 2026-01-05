@@ -1,12 +1,12 @@
-import { useState, useRef } from 'react';
+'use client';
+
+import { useState } from 'react';
 
 export default function Home() {
-  const formRef = useRef(null);
   const [success, setSuccess] = useState(false);
-
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [teamName, setTeamName] = useState('')
+  const [teamName, setTeamName] = useState('');
 
   const submit = async () => {
     if (!name || !email || !teamName) {
@@ -30,42 +30,62 @@ export default function Home() {
       setEmail('');
       setTeamName('');
       window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      alert('Xəta baş verdi');
     }
   };
 
   return (
-    <div style={{ fontFamily: 'sans-serif', background: '#0f172a', color: '#fff' }}>
+    <div style={{ background: '#0f172a', color: '#fff', fontFamily: 'sans-serif' }}>
 
-
+      {/* SUCCESS BANNER */}
       {success && (
-        <div style={{
-          background: 'linear-gradient(90deg,#22c55e,#16a34a)',
-          padding: '16px',
-          textAlign: 'center',
-          fontWeight: '600'
-        }}>
+        <div
+          style={{
+            background: 'linear-gradient(90deg,#22c55e,#16a34a)',
+            padding: '16px',
+            textAlign: 'center',
+            fontWeight: '600',
+          }}
+        >
           🎉 Qeydiyyat uğurla tamamlandı! Hackathonda görüşərik 🚀
         </div>
       )}
 
-      <section style={{
-        minHeight: '90vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        textAlign: 'center',
-        padding: '40px'
-      }}>
+      {/* HERO */}
+      <section
+        style={{
+          minHeight: '90vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          textAlign: 'center',
+          padding: '40px',
+        }}
+      >
         <div>
-          <h1 style={{ fontSize: '48px', marginBottom: '20px' }}>
+          <h1 style={{ fontSize: '46px', marginBottom: '20px' }}>
             🚀 FinTech Hackathon 2026
           </h1>
-          <p style={{ fontSize: '18px', color: '#cbd5f5', maxWidth: '600px', margin: '0 auto 30px' }}>
-            Gələcəyin maliyyə həllərini yarat, komandanla yarış,
-            mentorlarla tanış ol və real problemləri texnologiya ilə həll et.
+
+          <p
+            style={{
+              fontSize: '18px',
+              color: '#cbd5f5',
+              maxWidth: '600px',
+              margin: '0 auto 30px',
+            }}
+          >
+            Gələcəyin maliyyə texnologiyalarını yarat, komandanla yarış,
+            mentorlarla tanış ol və real problemləri həll et.
           </p>
+
           <button
-            onClick={() => formRef.current.scrollIntoView({ behavior: 'smooth' })}
+            onClick={() =>
+              document
+                .getElementById('registration')
+                .scrollIntoView({ behavior: 'smooth' })
+            }
             style={{
               padding: '14px 32px',
               fontSize: '16px',
@@ -73,7 +93,7 @@ export default function Home() {
               border: 'none',
               borderRadius: '8px',
               color: '#fff',
-              cursor: 'pointer'
+              cursor: 'pointer',
             }}
           >
             Qeydiyyatdan keç
@@ -81,46 +101,47 @@ export default function Home() {
         </div>
       </section>
 
-
+      {/* REGISTRATION */}
       <section
-        ref={formRef}
+        id="registration"
         style={{
           background: '#020617',
           padding: '80px 20px',
           display: 'flex',
-          justifyContent: 'center'
+          justifyContent: 'center',
         }}
       >
-        <div style={{
-          width: '100%',
-          maxWidth: '420px',
-          background: '#020617',
-          border: '1px solid #1e293b',
-          borderRadius: '12px',
-          padding: '32px'
-        }}>
-          <h2 style={{ marginBottom: '24px', textAlign: 'center' }}>
+        <div
+          style={{
+            width: '100%',
+            maxWidth: '420px',
+            border: '1px solid #1e293b',
+            borderRadius: '12px',
+            padding: '32px',
+          }}
+        >
+          <h2 style={{ textAlign: 'center', marginBottom: '24px' }}>
             Hackathon Qeydiyyatı
           </h2>
 
           <input
             placeholder="Ad Soyad"
             value={name}
-            onChange={(e) => setName(e.target.value)}
+            onChange={(x) => setName(x.target.value)}
             style={inputStyle}
           />
 
           <input
             placeholder="Email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(x) => setEmail(x.target.value)}
             style={inputStyle}
           />
 
           <input
             placeholder="Komanda adı"
             value={teamName}
-            onChange={(e) => setTeamName(e.target.value)}
+            onChange={(x) => setTeamName(x.target.value)}
             style={inputStyle}
           />
 
@@ -134,8 +155,7 @@ export default function Home() {
               border: 'none',
               borderRadius: '8px',
               fontWeight: '600',
-              color: '#022c22',
-              cursor: 'pointer'
+              cursor: 'pointer',
             }}
           >
             Qeydiyyatı tamamla
