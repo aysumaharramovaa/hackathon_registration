@@ -3,12 +3,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 
-type Member = {
-  name: string;
-  email: string;
-  phone: string;
-};
-
 type Registration = {
   id: number;
   team_name: string;
@@ -28,28 +22,38 @@ type Registration = {
 };
 
 export default function AdminPanel() {
+  const [password, setPassword] = useState('');
+  const [authorized, setAuthorized] = useState(false);
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(false);
 
+  // Login check
+  const handleLogin = () => {
+    if (password === process.env.NEXT_PUBLIC_ADMIN_PASSWORD) {
+      setAuthorized(true);
+      fetchRegistrations();
+    } else {
+      alert('Səhv şifrə!');
+    }
+  };
+
+  // Fetch registrations
   const fetchRegistrations = async () => {
     setLoading(true);
-    let query = supabase.from('registrations').select('*').order('created_at', { ascending: false });
-    const { data, error } = await query;
+    const { data, error } = await supabase
+      .from('registrations')
+      .select('*')
+      .order('created_at', { ascending: false });
 
     if (error) {
       console.log(error);
       setLoading(false);
       return;
     }
-
     setRegistrations(data as Registration[]);
     setLoading(false);
   };
-
-  useEffect(() => {
-    fetchRegistrations();
-  }, []);
 
   const filtered = registrations.filter((r) =>
     r.team_name.toLowerCase().includes(search.toLowerCase()) ||
@@ -58,6 +62,45 @@ export default function AdminPanel() {
     (r.member_3_name?.toLowerCase().includes(search.toLowerCase()) ?? false)
   );
 
+  // Password form
+  if (!authorized) {
+    return (
+      <div style={{ fontFamily: 'sans-serif', color: '#fff', background: '#0f172a', minHeight: '100vh', padding: '40px' }}>
+        <h1 style={{ textAlign: 'center', marginBottom: '24px' }}>Admin Panel Login</h1>
+        <input
+          type="password"
+          placeholder="Şifrə daxil edin"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          style={{
+            width: '100%',
+            padding: '12px',
+            marginBottom: '12px',
+            borderRadius: '8px',
+            border: '1px solid #1e293b',
+            background: '#020617',
+            color: '#fff',
+          }}
+        />
+        <button
+          onClick={handleLogin}
+          style={{
+            width: '100%',
+            padding: '14px',
+            borderRadius: '8px',
+            border: 'none',
+            fontWeight: '600',
+            background: 'linear-gradient(90deg,#6366f1,#4f46e5)',
+            cursor: 'pointer',
+          }}
+        >
+          Giriş
+        </button>
+      </div>
+    );
+  }
+
+  // Admin panel
   return (
     <div style={{ fontFamily: 'sans-serif', padding: '40px', background: '#0f172a', minHeight: '100vh', color: '#fff' }}>
       <h1 style={{ textAlign: 'center', marginBottom: '24px' }}>Admin Panel - Hackathon Qeydiyyatları</h1>
@@ -97,15 +140,9 @@ export default function AdminPanel() {
                 <td style={tdStyle}>{r.id}</td>
                 <td style={tdStyle}>{r.team_name}</td>
                 <td style={tdStyle}>
-                  {r.member_1_name && (
-                    <div>{r.member_1_name} ({r.member_1_email}, {r.member_1_phone})</div>
-                  )}
-                  {r.member_2_name && (
-                    <div>{r.member_2_name} ({r.member_2_email}, {r.member_2_phone})</div>
-                  )}
-                  {r.member_3_name && (
-                    <div>{r.member_3_name} ({r.member_3_email}, {r.member_3_phone})</div>
-                  )}
+                  {r.member_1_name && <div>{r.member_1_name} ({r.member_1_email}, {r.member_1_phone})</div>}
+                  {r.member_2_name && <div>{r.member_2_name} ({r.member_2_email}, {r.member_2_phone})</div>}
+                  {r.member_3_name && <div>{r.member_3_name} ({r.member_3_email}, {r.member_3_phone})</div>}
                 </td>
                 <td style={tdStyle}>
                   <strong>{r.solution_name}</strong>
