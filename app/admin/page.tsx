@@ -29,12 +29,22 @@ export default function AdminPanel() {
   const [loading, setLoading] = useState(false);
 
   // Login check
-  const handleLogin = () => {
-    if (password === process.env.NEXT_PUBLIC_ADMIN_PASSWORD) {
-      setAuthorized(true);
-      fetchRegistrations();
-    } else {
-      alert('Səhv şifrə!');
+  const handleLogin = async () => {
+    try {
+      const res = await fetch('/api/admin/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password }),
+      });
+
+      if (res.ok) {
+        setAuthorized(true);
+        fetchRegistrations();
+      } else {
+        alert('Səhv şifrə!');
+      }
+    } catch (err) {
+      alert('Xətaaaaaaa');
     }
   };
 
@@ -65,108 +75,124 @@ export default function AdminPanel() {
   // Password form
   if (!authorized) {
     return (
-      <div style={{ fontFamily: 'sans-serif', color: '#fff', background: '#0f172a', minHeight: '100vh', padding: '40px' }}>
-        <h1 style={{ textAlign: 'center', marginBottom: '24px' }}>Admin Panel Login</h1>
-        <input
-          type="password"
-          placeholder="Şifrə daxil edin"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          style={{
-            width: '100%',
-            padding: '12px',
-            marginBottom: '12px',
-            borderRadius: '8px',
-            border: '1px solid #1e293b',
-            background: '#020617',
-            color: '#fff',
-          }}
-        />
-        <button
-          onClick={handleLogin}
-          style={{
-            width: '100%',
-            padding: '14px',
-            borderRadius: '8px',
-            border: 'none',
-            fontWeight: '600',
-            background: 'linear-gradient(90deg,#6366f1,#4f46e5)',
-            cursor: 'pointer',
-          }}
-        >
-          Giriş
-        </button>
+      <div
+        style={{
+          fontFamily: 'sans-serif',
+          background: '#0f172a',
+          minHeight: '100vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <div style={{ background: '#1e293b', padding: '32px', borderRadius: '12px' }}>
+          <h2 style={{ color: '#fff', marginBottom: '16px' }}>Admin Girişi</h2>
+          <input
+            type="password"
+            placeholder="Şifrə"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            style={{
+              display: 'block',
+              width: '100%',
+              padding: '12px',
+              marginBottom: '12px',
+              borderRadius: '8px',
+              border: '1px solid #334155',
+              background: '#020617',
+              color: '#fff',
+            }}
+          />
+          <button
+            onClick={handleLogin}
+            style={{
+              width: '100%',
+              padding: '12px',
+              borderRadius: '8px',
+              border: 'none',
+              background: '#6366f1',
+              color: '#fff',
+              cursor: 'pointer',
+            }}
+          >
+            Giriş
+          </button>
+        </div>
       </div>
     );
   }
 
   // Admin panel
   return (
-    <div style={{ fontFamily: 'sans-serif', padding: '40px', background: '#0f172a', minHeight: '100vh', color: '#fff' }}>
-      <h1 style={{ textAlign: 'center', marginBottom: '24px' }}>Admin Panel - Hackathon Qeydiyyatları</h1>
+    <div style={{ fontFamily: 'sans-serif', background: '#0f172a', minHeight: '100vh', padding: '40px', color: '#fff' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+        <h1>Qeydiyyatlar</h1>
+        <input
+          placeholder="Axtar (Komanda və ya Üzv)"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          style={{
+            padding: '10px',
+            borderRadius: '8px',
+            border: '1px solid #334155',
+            background: '#1e293b',
+            color: '#fff',
+            width: '300px',
+          }}
+        />
+      </div>
 
-      <input
-        placeholder="Search by Team or Member"
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        style={{
-          width: '100%',
-          padding: '12px',
-          borderRadius: '8px',
-          border: '1px solid #1e293b',
-          marginBottom: '20px',
-          background: '#020617',
-          color: '#fff',
-        }}
-      />
-
-      {loading ? (
-        <p>Loading...</p>
-      ) : (
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+      <div style={{ overflowX: 'auto' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', background: '#1e293b', borderRadius: '12px' }}>
           <thead>
-            <tr style={{ background: '#1e293b' }}>
-              <th style={thStyle}>ID</th>
-              <th style={thStyle}>Team Name</th>
-              <th style={thStyle}>Members</th>
-              <th style={thStyle}>Solution</th>
-              <th style={thStyle}>File</th>
-              <th style={thStyle}>Created At</th>
+            <tr style={{ textAlign: 'left', borderBottom: '1px solid #334155' }}>
+              <th style={{ padding: '16px' }}>Komanda</th>
+              <th style={{ padding: '16px' }}>Üzvlər</th>
+              <th style={{ padding: '16px' }}>Həll</th>
+              <th style={{ padding: '16px' }}>Fayl</th>
+              <th style={{ padding: '16px' }}>Tarix</th>
             </tr>
           </thead>
           <tbody>
             {filtered.map((r) => (
-              <tr key={r.id} style={{ borderBottom: '1px solid #1e293b' }}>
-                <td style={tdStyle}>{r.id}</td>
-                <td style={tdStyle}>{r.team_name}</td>
-                <td style={tdStyle}>
-                  {r.member_1_name && <div>{r.member_1_name} ({r.member_1_email}, {r.member_1_phone})</div>}
-                  {r.member_2_name && <div>{r.member_2_name} ({r.member_2_email}, {r.member_2_phone})</div>}
-                  {r.member_3_name && <div>{r.member_3_name} ({r.member_3_email}, {r.member_3_phone})</div>}
+              <tr key={r.id} style={{ borderBottom: '1px solid #334155' }}>
+                <td style={{ padding: '16px' }}>{r.team_name}</td>
+                <td style={{ padding: '16px' }}>
+                  <div style={{ fontSize: '14px' }}>
+                    {r.member_1_name} ({r.member_1_email})
+                    {r.member_2_name && (
+                      <>
+                        <br />
+                        {r.member_2_name} ({r.member_2_email})
+                      </>
+                    )}
+                    {r.member_3_name && (
+                      <>
+                        <br />
+                        {r.member_3_name} ({r.member_3_email})
+                      </>
+                    )}
+                  </div>
                 </td>
-                <td style={tdStyle}>
+                <td style={{ padding: '16px' }}>
                   <strong>{r.solution_name}</strong>
-                  <p>{r.solution_desc}</p>
+                  <p style={{ fontSize: '12px', color: '#94a3b8', marginTop: '4px' }}>{r.solution_desc}</p>
                 </td>
-                <td style={tdStyle}>
-                  {r.file_url ? <a href={r.file_url} target="_blank" rel="noopener noreferrer" style={{ color: '#22c55e' }}>View File</a> : 'No File'}
+                <td style={{ padding: '16px' }}>
+                  {r.file_url ? (
+                    <a href={r.file_url} target="_blank" style={{ color: '#6366f1' }}>
+                      Bax
+                    </a>
+                  ) : (
+                    'Yoxdur'
+                  )}
                 </td>
-                <td style={tdStyle}>{new Date(r.created_at).toLocaleString()}</td>
+                <td style={{ padding: '16px', fontSize: '14px' }}>{new Date(r.created_at).toLocaleDateString()}</td>
               </tr>
             ))}
           </tbody>
         </table>
-      )}
+      </div>
     </div>
   );
 }
-
-const thStyle: React.CSSProperties = {
-  padding: '12px',
-  textAlign: 'left',
-  borderBottom: '1px solid #1e293b',
-};
-
-const tdStyle: React.CSSProperties = {
-  padding: '12px',
-};

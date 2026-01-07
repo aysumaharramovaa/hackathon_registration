@@ -10,6 +10,7 @@ type Member = {
 
 export default function HackathonForm() {
   const [success, setSuccess] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [teamName, setTeamName] = useState("");
   const [members, setMembers] = useState<Member[]>([
     { name: "", email: "", phone: "" },
@@ -33,7 +34,12 @@ export default function HackathonForm() {
   const addMember = () => {
     if (members.length < 3)
       setMembers([...members, { name: "", email: "", phone: "" }]);
-    else alert("Maximum 3 üzv əlavə edilə bilər");
+  };
+
+  const removeMember = (index: number) => {
+    if (members.length > 1) {
+      setMembers(members.filter((_, i) => i !== index));
+    }
   };
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -48,19 +54,17 @@ export default function HackathonForm() {
     setSolutionName("");
     setSolutionDesc("");
     setFile(null);
+    setLoading(false);
+    setTimeout(() => setSuccess(false), 5000);
   };
 
   const submit = async () => {
     if (!teamName || !solutionName || !solutionDesc) {
-      alert("Komanda adı, həll və izzah doldurulmalıdır");
+      alert("Bütün sahələr doldurulmalıdır");
       return;
     }
-    for (let i = 0; i < members.length; i++) {
-      if (!members[i].name || !members[i].email || !members[i].phone) {
-        alert(`Üzv ${i + 1} üçün bütün sahələri doldurun`);
-        return;
-      }
-    }
+
+    setLoading(true);
 
     const data: any = {
       team_name: teamName,
@@ -69,37 +73,52 @@ export default function HackathonForm() {
       solution_desc: solutionDesc,
     };
 
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = async () => {
-        if (!reader.result) return alert("Fayl oxunmadı!");
-        const base64 = reader.result.toString().split(",")[1];
-        const uploadRes = await fetch("/api/upload", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ fileBase64: base64, fileName: file.name }),
-        });
-        const { url } = await uploadRes.json();
-        data.file_url = url;
+    try {
+      if (file) {
+        const reader = new FileReader();
+        reader.onloadend = async () => {
+          if (!reader.result) {
+            setLoading(false);
+            return alert("Fayl oxunmadı!");
+          }
+          const base64 = reader.result.toString().split(",")[1];
+          const uploadRes = await fetch("/api/upload", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ fileBase64: base64, fileName: file.name }),
+          });
+          const { url } = await uploadRes.json();
+          data.file_url = url;
 
+          const res = await fetch("/api/register", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data),
+          });
+
+          if (res.ok) resetForm();
+          else {
+            alert("Xəta baş verdi");
+            setLoading(false);
+          }
+        };
+        reader.readAsDataURL(file);
+      } else {
         const res = await fetch("/api/register", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(data),
         });
-
         if (res.ok) resetForm();
-        else alert("Xəta baş verdi");
-      };
-      reader.readAsDataURL(file);
-    } else {
-      const res = await fetch("/api/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-      if (res.ok) resetForm();
-      else alert("Xəta baş verdi");
+        else {
+          alert("Xəta baş verdi");
+          setLoading(false);
+        }
+      }
+    } catch (err) {
+      console.log(err);
+      alert("Gözlənilməz xəta baş verdi");
+      setLoading(false);
     }
   };
 
@@ -202,8 +221,8 @@ export default function HackathonForm() {
           style={{ marginTop: "12px", color: "#fff" }}
         />
 
-        <button onClick={submit} style={submitButtonStyle}>
-          Qeydiyyatı tamamla
+        <button onClick={submit} style={submitButtonStyle} disabled={loading}>
+          {loading ? "Göndərilir..." : "Qeydiyyatı tamamla"}
         </button>
       </div>
     </div>
@@ -226,6 +245,7 @@ const smallButtonStyle: React.CSSProperties = {
   border: "none",
   background: "#6366f1",
   cursor: "pointer",
+  color: "#fff",
 };
 const submitButtonStyle: React.CSSProperties = {
   width: "100%",
@@ -236,4 +256,6 @@ const submitButtonStyle: React.CSSProperties = {
   fontWeight: "600",
   background: "linear-gradient(90deg,#22c55e,#16a34a)",
   cursor: "pointer",
+  color: "#fff",
 };
+
