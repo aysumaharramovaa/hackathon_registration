@@ -34,26 +34,10 @@
 
 <script>
 const tableBody = document.querySelector('#applicationsTable tbody');
-let ADMIN_PASS = "";
-
-function askPassword(){
-  ADMIN_PASS = prompt("Admin parolunu daxil edin:");
-  if (!ADMIN_PASS) askPassword();
-  else fetchApplications();
-}
 
 async function fetchApplications(){
   try {
-    const res = await fetch('/api/applications', {
-      headers: { "x-admin-password": ADMIN_PASS }
-    });
-
-    if(res.status===401){
-      alert("Yanlış parol!");
-      askPassword();
-      return;
-    }
-
+    const res = await fetch('/api/applications');
     const data = await res.json();
     tableBody.innerHTML = '';
 
@@ -95,8 +79,7 @@ async function deleteTeam(teamId){
     const res = await fetch('/api/applications', {
       method:'DELETE',
       headers: {
-        "Content-Type":"application/json",
-        "x-admin-password": ADMIN_PASS
+        "Content-Type":"application/json"
       },
       body: JSON.stringify({teamId})
     });
@@ -110,7 +93,7 @@ async function deleteTeam(teamId){
   }
 }
 
-askPassword();
+fetchApplications();
 setInterval(fetchApplications, 30000);
 </script>
 
