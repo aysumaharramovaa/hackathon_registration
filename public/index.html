@@ -5,25 +5,186 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Hackathon Registration</title>
 <style>
-  body{font-family:sans-serif;padding:20px;background:#eef2f7;}
-  h1{color:#0070f3;text-align:center;}
-  form{background:#fff;padding:20px;border-radius:10px;max-width:600px;margin:auto;}
-  .member{border:1px solid #ccc;padding:10px;margin-top:10px;border-radius:8px;position:relative;}
-  .remove-btn{position:absolute;right:10px;top:10px;background:red;color:#fff;border:none;border-radius:5px;padding:2px 6px;cursor:pointer;}
-  input,textarea,button{width:100%;padding:10px;margin-top:5px;border-radius:6px;border:1px solid #ccc;}
-  button{background:#0070f3;color:#fff;border:none;margin-top:15px;cursor:pointer;}
-  button:hover{opacity:0.9;}
+
+/* --- Global Reset --- */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+  background: linear-gradient(135deg, #f0f4ff, #e2ebf7);
+  padding: 40px 20px;
+  min-height: 100vh;
+}
+
+/* --- Heading --- */
+h1 {
+  text-align: center;
+  color: #1a73e8;
+  font-size: 2.5rem;
+  margin-bottom: 10px;
+  letter-spacing: 1px;
+}
+
+/* --- Subheading --- */
+.subheading {
+  text-align: center;
+  color: #555;
+  margin-bottom: 25px;
+  font-size: 1rem;
+}
+
+/* --- Form --- */
+form {
+  background: #ffffff;
+  padding: 30px 25px;
+  border-radius: 15px;
+  max-width: 650px;
+  margin: 0 auto;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  transition: all 0.3s ease;
+}
+
+form:hover {
+  transform: translateY(-2px);
+}
+
+/* --- Input & Textarea --- */
+input, textarea {
+  width: 100%;
+  padding: 12px 15px;
+  margin-top: 12px;
+  border-radius: 10px;
+  border: 1px solid #cfd8e4;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+}
+
+input:focus, textarea:focus {
+  border-color: #1a73e8;
+  box-shadow: 0 0 5px rgba(26,115,232,0.3);
+  outline: none;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+/* --- Member Card --- */
+.member {
+  border: 1px solid #d1d9e6;
+  padding: 15px 20px;
+  margin-top: 15px;
+  border-radius: 12px;
+  background: #f9fbff;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.member:hover {
+  box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+}
+
+.member h4 {
+  font-size: 1.1rem;
+  color: #333;
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* --- Remove Button --- */
+.remove-btn {
+  background: #e74c3c;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 3px 8px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: all 0.2s ease;
+}
+
+.remove-btn:hover {
+  background: #c0392b;
+}
+
+/* --- Add Member Button --- */
+#addMemberBtn {
+  width: auto;
+  padding: 12px 20px;
+  background: #1a73e8;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 15px;
+  transition: all 0.2s ease;
+}
+
+#addMemberBtn:disabled {
+  background: #a0c0f0;
+  cursor: not-allowed;
+}
+
+#addMemberBtn:hover:not(:disabled) {
+  background: #155ab6;
+}
+
+/* --- Submit Button --- */
+button[type="submit"] {
+  background: #28a745;
+  color: #fff;
+  font-size: 1.05rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+button[type="submit"]:hover {
+  background: #218838;
+}
+
+/* --- Message --- */
+#msg {
+  text-align: center;
+  margin-top: 20px;
+  font-weight: 500;
+  font-size: 1rem;
+}
+
+/* --- Responsive --- */
+@media(max-width: 700px){
+  form {
+    padding: 25px 15px;
+  }
+
+  input, textarea, button {
+    font-size: 0.95rem;
+  }
+
+  h1 {
+    font-size: 2rem;
+  }
+}
 </style>
 </head>
 <body>
 
 <h1>Hackathon Registration</h1>
+<p class="subheading">Qərbi Kaspi Universiteti Tələbələri üçün <b>Hackathon-1</b><br>Əlaqə: +994 77 348 69 58 (Aysu Məhərrəmova)</p>
+
 <form id="regForm">
-  <input type="text" name="team" placeholder="Team Name" required>
+  <input type="text" name="team" placeholder="Komanda Adı" required>
   <div id="membersContainer"></div>
-  <button type="button" id="addMemberBtn">+ Add Member</button>
-  <textarea name="idea" placeholder="Your Fintech Idea" required></textarea>
-  <button type="submit">Submit</button>
+  <button type="button" id="addMemberBtn">+ Üzv Əlavə et</button>
+  <textarea name="idea" placeholder="Fintech Idea" required></textarea>
+  <button type="submit">Göndər</button>
 </form>
 <p id="msg"></p>
 
@@ -36,41 +197,75 @@ let count = 0;
 const MAX = 3;
 
 function addMember(){
-  if(count>=MAX)return alert("Maximum 3 members!");
+  if(count >= MAX){
+    addMemberBtn.disabled = true;
+    return;
+  }
   count++;
   const div = document.createElement("div");
   div.className="member";
   div.innerHTML=`
-    <h4>Member ${count} ${count>1?'<button type="button" class="remove-btn">Remove</button>':''}</h4>
-    <input name="member${count}_name" placeholder="Full Name" required>
+    <h4>Üzv ${count} ${count>1?'<button type="button" class="remove-btn">Sil</button>':''}</h4>
+    <input name="member${count}_name" placeholder="Ad Soyad" required>
     <input name="member${count}_email" placeholder="Email" type="email" required>
-    <input name="member${count}_phone" placeholder="Phone" required>
-    <input name="member${count}_group" placeholder="Group / Major" required>
+    <input name="member${count}_phone" placeholder="Telefon" required>
+    <input name="member${count}_group" placeholder="Qrup / İxtisas (məsələn: 234K-2)" required>
   `;
   if(count>1){
     div.querySelector(".remove-btn").onclick = ()=>{
       div.remove();
       count--;
-      addMemberBtn.disabled=false;
+      addMemberBtn.disabled = false;
+      updateMemberHeaders();
     };
   }
   membersContainer.appendChild(div);
-  if(count===MAX)addMemberBtn.disabled=true;
+  if(count === MAX) addMemberBtn.disabled = true;
 }
 
-addMemberBtn.onclick=addMember;
+// Update member headers after removal
+function updateMemberHeaders(){
+  const members = document.querySelectorAll(".member");
+  members.forEach((m, i)=>{
+    m.querySelector("h4").innerHTML = `Üzv ${i+1} ${i>0?'<button type="button" class="remove-btn">Sil</button>':''}`;
+    const removeBtn = m.querySelector(".remove-btn");
+    if(removeBtn){
+      removeBtn.onclick = ()=>{
+        m.remove();
+        count--;
+        addMemberBtn.disabled = false;
+        updateMemberHeaders();
+      }
+    }
+  });
+}
+
+addMemberBtn.onclick = addMember;
 addMember(); // first member
 
-form.onsubmit=async e=>{
+form.onsubmit = async e=>{
   e.preventDefault();
-  const data=Object.fromEntries(new FormData(form).entries());
+  const data = Object.fromEntries(new FormData(form).entries());
   try{
-    const res=await fetch("/api/register",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(data)});
-    const json=await res.json();
-    msg.innerText=json.message||json.error;
-    msg.style.color=json.error?"red":"green";
-    if(!json.error){form.reset();membersContainer.innerHTML="";count=0;addMember();addMemberBtn.disabled=false;}
-  }catch(err){msg.innerText="Server error!";msg.style.color="red";}
+    const res = await fetch("/api/register",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify(data)
+    });
+    const json = await res.json();
+    msg.innerText = json.message || json.error;
+    msg.style.color = json.error ? "red" : "green";
+    if(!json.error){
+      form.reset();
+      membersContainer.innerHTML="";
+      count=0;
+      addMember();
+      addMemberBtn.disabled=false;
+    }
+  }catch(err){
+    msg.innerText = "Server error!";
+    msg.style.color="red";
+  }
 };
 </script>
 </body>
