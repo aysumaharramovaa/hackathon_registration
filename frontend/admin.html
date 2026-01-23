@@ -1,68 +1,103 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Admin Panel</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hackathon Admin Panel</title>
   <style>
-    body { font-family: Arial; padding: 20px; }
-    table { border-collapse: collapse; width: 100%; margin-top: 20px; }
-    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-    th { background: #f4f4f4; }
-    input { padding: 5px; width: 300px; margin-bottom: 10px; }
+    body {
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: #f0f4f8;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+      color: #0070f3;
+      margin-bottom: 20px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      background: #fff;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    th, td {
+      padding: 12px;
+      border-bottom: 1px solid #ddd;
+      text-align: left;
+    }
+    th {
+      background: #0070f3;
+      color: white;
+    }
+    tr:hover {
+      background: #f1f7ff;
+    }
+    .member-block {
+      margin: 5px 0;
+      padding: 5px 10px;
+      background: #f9f9f9;
+      border-radius: 5px;
+    }
   </style>
 </head>
 <body>
   <h1>Hackathon Admin Panel</h1>
-  <input type="text" id="searchInput" placeholder="Search...">
-  <table id="applicationsTable">
+  <table>
     <thead>
       <tr>
-        <th>ID</th>
-        <th>Full Name</th>
-        <th>Email</th>
-        <th>Phone</th>
+        <th>Team Name</th>
         <th>Idea</th>
-        <th>Created At</th>
+        <th>Members</th>
+        <th>Submitted At</th>
       </tr>
     </thead>
-    <tbody></tbody>
+    <tbody id="teamsTable">
+      <!-- Dynamic content -->
+    </tbody>
   </table>
 
   <script>
-    const tableBody = document.querySelector('#applicationsTable tbody');
-    const searchInput = document.getElementById('searchInput');
-
-    async function fetchApplications() {
+    async function loadTeams() {
       try {
-        const res = await fetch('https://hackathon-registration-seven.vercel.app/api/applications');
-        const data = await res.json();
-        tableBody.innerHTML = '';
-        data.forEach(app => {
-          const row = document.createElement('tr');
-          row.innerHTML = `
-            <td>${app.id}</td>
-            <td>${app.fullname}</td>
-            <td>${app.email}</td>
-            <td>${app.phone}</td>
-            <td>${app.idea}</td>
-            <td>${new Date(app.created_at).toLocaleString()}</td>
+        const res = await fetch("/api/applications");
+        const teams = await res.json();
+
+        const tbody = document.getElementById("teamsTable");
+        tbody.innerHTML = "";
+
+        teams.forEach(team => {
+          const tr = document.createElement("tr");
+
+          // Members block
+          const membersDiv = document.createElement("div");
+          team.members.forEach((m, i) => {
+            const mb = document.createElement("div");
+            mb.className = "member-block";
+            mb.innerHTML = `<strong>Member ${i+1}:</strong> ${m.name}, ${m.email}, ${m.phone}, ${m.group}`;
+            membersDiv.appendChild(mb);
+          });
+
+          tr.innerHTML = `
+            <td>${team.team_name}</td>
+            <td>${team.idea}</td>
+            <td></td>
+            <td>${new Date(team.created_at).toLocaleString()}</td>
           `;
-          tableBody.appendChild(row);
+          tr.children[2].appendChild(membersDiv);
+          tbody.appendChild(tr);
         });
-      } catch (err) {
+
+      } catch(err) {
         console.error(err);
-        tableBody.innerHTML = '<tr><td colspan="6">Failed to load applications</td></tr>';
+        alert("Failed to load teams!");
       }
     }
 
-    fetchApplications();
-    searchInput.addEventListener('input', () => {
-      const filter = searchInput.value.toLowerCase();
-      Array.from(tableBody.rows).forEach(row => {
-        row.style.display = row.innerText.toLowerCase().includes(filter) ? '' : 'none';
-      });
-    });
-    setInterval(fetchApplications, 30000);
+    loadTeams();
   </script>
 </body>
 </html>
