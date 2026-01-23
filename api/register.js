@@ -39,7 +39,7 @@ module.exports = async (req, res) => {
     }
 
     await client.end();
-    res.status(200).json({ message: "Göndərildi!" });
+    res.status(200).json({ message: "Application submitted!" });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Database error" });
