@@ -37,7 +37,7 @@
 
     async function fetchApplications() {
       try {
-        const res = await fetch('https://hackathon-registration-seven.vercel.app/applications');
+        const res = await fetch('https://hackathon-registration-seven.vercel.app/api/applications');
         const data = await res.json();
 
         tableBody.innerHTML = '';
