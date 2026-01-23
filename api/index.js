@@ -4,7 +4,7 @@ const { Pool } = require("pg");
 require("dotenv").config();
 
 const app = express();
-const PORT = process.env.PORT || 3000; // Port əlavə edildi
+const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
@@ -14,12 +14,10 @@ const pool = new Pool({
   ssl: { rejectUnauthorized: false },
 });
 
-// TEST
 app.get("/", (req, res) => {
   res.send("Hackathon Backend Working 🚀");
 });
 
-// REGISTER
 app.post("/register", async (req, res) => {
   try {
     const { fullname, email, phone, idea } = req.body;
@@ -40,7 +38,6 @@ app.post("/register", async (req, res) => {
   }
 });
 
-// ADMIN — BÜTÜN MÜRACİƏTLƏR
 app.get("/applications", async (req, res) => {
   try {
     const result = await pool.query("SELECT * FROM applications ORDER BY id DESC");
@@ -50,7 +47,6 @@ app.get("/applications", async (req, res) => {
   }
 });
 
-// SERVER LİSTEN
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
