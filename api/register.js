@@ -41,7 +41,7 @@ module.exports = async (req, res) => {
     res.status(200).json({ message: "Application submitted!" });
 
   } catch (err) {
-    console.error("REGISTER ERROR:", err);
-    res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ error: "Database error" });
   }
 };

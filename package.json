@@ -1,19 +1,11 @@
 {
   "name": "hackathon_registration",
   "version": "1.0.0",
-  "main": "index.js",
   "type": "commonjs",
-  "scripts": {
-    "start": "node api/index.js"
+  "engines": {
+    "node": "24.x"
   },
-"engines": {
-  "node": "24.x"
-}
-,
   "dependencies": {
-    "express": "^5.2.1",
-    "pg": "^8.17.2",
-    "cors": "^2.8.6",
-    "dotenv": "^17.2.3"
+    "pg": "^8.17.2"
   }
 }

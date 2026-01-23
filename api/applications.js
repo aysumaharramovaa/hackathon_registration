@@ -25,7 +25,7 @@ module.exports = async (req, res) => {
     res.status(200).json(teams.rows);
 
   } catch (err) {
-    console.error("APPLICATIONS ERROR:", err);
-    res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ error: "Database error" });
   }
 };
