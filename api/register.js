@@ -1,51 +1,43 @@
-import { Pool } from "pg";
+const { Pool } = require("pg");
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: { rejectUnauthorized: false },
 });
 
-export default async function handler(req, res) {
+module.exports = async (req, res) => {
   if (req.method !== "POST")
-    return res.status(405).json({ error: "Only POST allowed" });
+    return res.status(405).json({ error: "Method not allowed" });
+
+  const { team, idea, ...members } = req.body;
 
   try {
-    const body = req.body;
-
-    const team_name = body.team;
-    const idea = body.idea;
-
-    if (!team_name || !idea)
-      return res.status(400).json({ error: "Missing team name or idea" });
-
-    const teamInsert = await pool.query(
+    const teamResult = await pool.query(
       "INSERT INTO teams (team_name, idea) VALUES ($1,$2) RETURNING id",
-      [team_name, idea]
+      [team, idea]
     );
 
-    const teamId = teamInsert.rows[0].id;
+    const teamId = teamResult.rows[0].id;
 
     for (let i = 1; i <= 3; i++) {
-      if (body[`member${i}_name`]) {
+      if (members[`member${i}_name`]) {
         await pool.query(
-          "INSERT INTO members (team_id,name,email,phone,group_name) VALUES ($1,$2,$3,$4,$5)",
+          `INSERT INTO members (team_id,name,email,phone,group_name)
+           VALUES ($1,$2,$3,$4,$5)`,
           [
             teamId,
-            body[`member${i}_name`],
-            body[`member${i}_email`],
-            body[`member${i}_phone`],
-            body[`member${i}_group`],
+            members[`member${i}_name`],
+            members[`member${i}_email`],
+            members[`member${i}_phone`],
+            members[`member${i}_group`],
           ]
         );
       }
     }
 
-    res.status(200).json({ message: "Application saved!" });
-    console.log("DATABASE_URL:", process.env.DATABASE_URL);
-
-
+    res.status(200).json({ message: "Application submitted!" });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: "Server error" });
   }
-}
+};

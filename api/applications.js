@@ -1,13 +1,15 @@
-import { Pool } from "pg";
+const { Pool } = require("pg");
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: { rejectUnauthorized: false },
 });
 
-export default async function handler(req, res) {
+module.exports = async (req, res) => {
   try {
-    const teams = await pool.query("SELECT * FROM teams ORDER BY created_at DESC");
+    const teams = await pool.query(
+      "SELECT * FROM teams ORDER BY created_at DESC"
+    );
 
     for (let team of teams.rows) {
       const members = await pool.query(
@@ -19,6 +21,7 @@ export default async function handler(req, res) {
 
     res.status(200).json(teams.rows);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ error: "Database error" });
   }
-}
+};
