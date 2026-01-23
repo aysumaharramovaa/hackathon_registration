@@ -1,126 +1,257 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="az">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Qərbi Kaspi Hackathon Registration</title>
+
   <style>
     * { box-sizing: border-box; margin:0; padding:0; font-family:"Segoe UI", Arial, sans-serif; }
-    body { background:#eef2f7; min-height:100vh; display:flex; justify-content:center; align-items:center; padding:20px; }
-    .container { display:flex; border-radius:15px; overflow:hidden; max-width:1000px; width:100%; }
-    .left { flex:1; padding:30px; }
-    .right { flex:1; background:url("fintech.png") center/cover no-repeat; min-height:100%; }
 
-    h1 { font-size:28px; margin-bottom:10px; color:#0070f3; text-align:center; }
-    p.subtitle { text-align:center; font-size:16px; margin-bottom:25px; color:#555; }
+    body {
+      background:#eef2f7;
+      min-height:100vh;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      padding:20px;
+    }
 
-    form label { display:block; font-weight:bold; margin-bottom:5px; margin-top:15px; color:#333; }
-    form input, form textarea { width:100%; padding:12px; border-radius:8px; border:1px solid #ccc; font-size:15px; transition:border-color 0.3s; }
-    form input:focus, form textarea:focus { border-color:#0070f3; outline:none; }
-    form button { margin-top:15px; width:100%; padding:14px; border:none; border-radius:10px; background:linear-gradient(90deg,#0070f3,#005ac1); color:white; font-size:16px; cursor:pointer; transition:background 0.3s; }
-    form button:hover { background:linear-gradient(90deg,#005ac1,#003f8a); }
-    #message { margin-top:15px; font-weight:bold; text-align:center; color:green; }
+    .container {
+      background:white;
+      padding:30px;
+      border-radius:16px;
+      box-shadow:0 10px 30px rgba(0,0,0,0.08);
+      max-width:900px;
+      width:100%;
+    }
 
-    .member { border:1px solid #ddd; padding:15px; margin-top:15px; border-radius:10px; background:#f9f9f9; }
-    .member h3 { margin-bottom:10px; color:#0070f3; }
+    h1 {
+      font-size:28px;
+      margin-bottom:10px;
+      color:#0070f3;
+      text-align:center;
+    }
 
-    @media(max-width:800px){ .container { flex-direction:column; } .right { height:200px; } }
+    p.subtitle {
+      text-align:center;
+      font-size:15px;
+      margin-bottom:25px;
+      color:#555;
+      line-height:1.5;
+    }
+
+    form label {
+      display:block;
+      font-weight:600;
+      margin-bottom:6px;
+      margin-top:15px;
+      color:#333;
+    }
+
+    form input, form textarea {
+      width:100%;
+      padding:12px;
+      border-radius:8px;
+      border:1px solid #ccc;
+      font-size:15px;
+      transition:0.3s;
+    }
+
+    form input:focus, form textarea:focus {
+      border-color:#0070f3;
+      outline:none;
+      box-shadow:0 0 0 2px rgba(0,112,243,0.1);
+    }
+
+    .member {
+      border:1px solid #ddd;
+      padding:15px;
+      margin-top:15px;
+      border-radius:10px;
+      background:#f9f9f9;
+      position:relative;
+    }
+
+    .member h3 { color:#0070f3; margin-bottom:10px; }
+
+    .remove-btn {
+      position:absolute;
+      right:10px;
+      top:10px;
+      background:#ff4d4f;
+      color:white;
+      border:none;
+      border-radius:6px;
+      padding:5px 10px;
+      cursor:pointer;
+      font-size:12px;
+    }
+
+    .controls {
+      display:flex;
+      gap:10px;
+      margin-top:15px;
+    }
+
+    button {
+      flex:1;
+      padding:14px;
+      border:none;
+      border-radius:10px;
+      font-size:15px;
+      cursor:pointer;
+      transition:0.3s;
+    }
+
+    #addMemberBtn {
+      background:#f0f0f0;
+    }
+
+    #addMemberBtn:hover {
+      background:#e0e0e0;
+    }
+
+    #submitBtn {
+      background:linear-gradient(90deg,#0070f3,#005ac1);
+      color:white;
+    }
+
+    #submitBtn:hover {
+      opacity:0.9;
+    }
+
+    #message {
+      margin-top:15px;
+      font-weight:bold;
+      text-align:center;
+    }
   </style>
 </head>
 <body>
+
 <div class="container">
-  <div class="right"></div>
-  <div class="left">
-    <h1>Hackathon-1</h1>
-    <p class="subtitle">
-      Qərbi Kaspi Universiteti tələbələri üçün fintech ideyaları hakatonu.<br/>
-      <strong>Əlaqə:</strong> +994 77 348 69 58, Aysu Maharramova
-    </p>
+  <h1>Hackathon Registration</h1>
+  <p class="subtitle">
+    Qərbi Kaspi Universiteti tələbələri üçün fintech ideyaları hakatonu
+  </p>
 
-    <form id="regForm">
-      <label>Team Name</label>
-      <input type="text" name="team" placeholder="Məs: FinTech Innovators" required>
+  <form id="regForm">
 
-      <div id="membersContainer"></div>
-      <button type="button" id="addMemberBtn">Add Member</button>
+    <label>Team Name</label>
+    <input type="text" name="team" required>
 
-      <label>Idea</label>
-      <textarea name="idea" placeholder="Fintech app, AI bot, etc." rows="4" required></textarea>
+    <div id="membersContainer"></div>
 
-      <button type="submit">Submit Application</button>
-      <p id="message"></p>
-    </form>
-  </div>
+    <div class="controls">
+      <button type="button" id="addMemberBtn">+ Add Member</button>
+    </div>
+
+    <label>Idea Description</label>
+    <textarea name="idea" rows="4" required></textarea>
+
+    <button id="submitBtn" type="submit">Submit Application</button>
+    <p id="message"></p>
+  </form>
 </div>
 
 <script>
-  const membersContainer = document.getElementById("membersContainer");
-  const addMemberBtn = document.getElementById("addMemberBtn");
-  let memberCount = 0;
-  const MAX_MEMBERS = 3;
+const membersContainer = document.getElementById("membersContainer");
+const addMemberBtn = document.getElementById("addMemberBtn");
+const form = document.getElementById("regForm");
+const message = document.getElementById("message");
+const submitBtn = document.getElementById("submitBtn");
 
-  function createMemberBlock(index){
-    const div = document.createElement("div");
-    div.className = "member";
-    div.innerHTML = `
-      <h3>Member ${index}</h3>
-      <label>Ad Soyad</label>
-      <input type="text" name="member${index}_name" placeholder="Ad Soyad" required>
-      <label>Email</label>
-      <input type="email" name="member${index}_email" placeholder="email@example.com" required>
-      <label>Telefon</label>
-      <input type="text" name="member${index}_phone" placeholder="+994 50 123 45 67" required>
-      <label>Oxuduğu Qrup</label>
-      <input type="text" name="member${index}_group" placeholder="Computer Engineering" required>
-    `;
-    membersContainer.appendChild(div);
+let memberCount = 0;
+const MAX_MEMBERS = 3;
+
+function createMemberBlock(index){
+  const div = document.createElement("div");
+  div.className = "member";
+  div.innerHTML = `
+    <h3>Member ${index}</h3>
+    ${index > 1 ? `<button type="button" class="remove-btn">Remove</button>` : ""}
+
+    <label>Ad Soyad</label>
+    <input type="text" name="member${index}_name" required>
+
+    <label>Email</label>
+    <input type="email" name="member${index}_email" required>
+
+    <label>Telefon</label>
+    <input type="tel" name="member${index}_phone"
+      pattern="^\\+994\\s?\\d{2}\\s?\\d{3}\\s?\\d{2}\\s?\\d{2}$"
+      placeholder="+994 50 123 45 67"
+      required>
+
+    <label>Qrup / İxtisas</label>
+    <input type="text" name="member${index}_group" required>
+  `;
+
+  if(index > 1){
+    div.querySelector(".remove-btn").addEventListener("click", ()=>{
+      div.remove();
+      memberCount--;
+      addMemberBtn.disabled = false;
+      addMemberBtn.textContent = "+ Add Member";
+    });
   }
 
- // Başda 1 member
-memberCount++;
-createMemberBlock(memberCount);
+  membersContainer.appendChild(div);
+}
+
+function initFirstMember(){
+  membersContainer.innerHTML = "";
+  memberCount = 1;
+  createMemberBlock(memberCount);
+}
+
+initFirstMember();
 
 addMemberBtn.addEventListener("click", ()=>{
   if(memberCount < MAX_MEMBERS){
     memberCount++;
     createMemberBlock(memberCount);
-
-    if(memberCount === MAX_MEMBERS){
-      addMemberBtn.disabled = true;
-      addMemberBtn.textContent = "Maximum members added";
-      addMemberBtn.style.opacity = 0.5;
-      addMemberBtn.style.cursor = "not-allowed";
-    }
+  }
+  if(memberCount === MAX_MEMBERS){
+    addMemberBtn.disabled = true;
+    addMemberBtn.textContent = "Maximum 3 members";
   }
 });
 
-  const form = document.getElementById("regForm");
-  const message = document.getElementById("message");
+form.addEventListener("submit", async (e)=>{
+  e.preventDefault();
+  submitBtn.textContent = "Submitting...";
+  submitBtn.disabled = true;
 
-  form.addEventListener("submit", async (e)=>{
-    e.preventDefault();
-    const formData = Object.fromEntries(new FormData(form).entries());
-    try{
-      const res = await fetch("/api/register", {
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body:JSON.stringify(formData)
-      });
-      const data = await res.json();
-      message.textContent = data.message || data.error;
-      message.style.color = data.error ? "red" : "green";
-      if(!data.error){
-        form.reset();
-        membersContainer.innerHTML="";
-        memberCount=1;
-        createMemberBlock(memberCount);
-      }
-    }catch(err){
-      console.error(err);
-      message.textContent="Server error!";
-      message.style.color="red";
+  const formData = Object.fromEntries(new FormData(form).entries());
+
+  try{
+    const res = await fetch("/api/register", {
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify(formData)
+    });
+
+    const data = await res.json();
+
+    message.textContent = data.message || data.error;
+    message.style.color = data.error ? "red" : "green";
+
+    if(!data.error){
+      form.reset();
+      initFirstMember();
     }
-  });
+
+  } catch {
+    message.textContent = "Server error!";
+    message.style.color = "red";
+  }
+
+  submitBtn.textContent = "Submit Application";
+  submitBtn.disabled = false;
+});
 </script>
+
 </body>
 </html>

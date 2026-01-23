@@ -1,45 +1,49 @@
-import express from "express";
-import pkg from "pg";
-const { Pool } = pkg;
+import { Pool } from "pg";
 
-const router = express.Router();
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false },
+});
 
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+export default async function handler(req, res) {
+  if (req.method !== "POST")
+    return res.status(405).json({ error: "Only POST allowed" });
 
-router.post("/", async (req, res) => {
-  const { team, idea, ...members } = req.body;
+  try {
+    const body = req.body;
 
-  if(!team || !idea) return res.status(400).json({error:"Team and Idea required"});
+    const team_name = body.team;
+    const idea = body.idea;
 
-  try{
-    const client = await pool.connect();
-    const teamResult = await client.query(
-      "INSERT INTO teams(team_name, idea) VALUES($1,$2) RETURNING id",
-      [team, idea]
+    if (!team_name || !idea)
+      return res.status(400).json({ error: "Missing team name or idea" });
+
+    const teamInsert = await pool.query(
+      "INSERT INTO teams (team_name, idea) VALUES ($1,$2) RETURNING id",
+      [team_name, idea]
     );
-    const teamId = teamResult.rows[0].id;
 
-    // Insert members dynamically
-    for(let i=1;i<=3;i++){
-      if(members[`member${i}_name`]){
-        await client.query(
-          `INSERT INTO members(team_id,name,email,phone,group_name) VALUES($1,$2,$3,$4,$5)`,
+    const teamId = teamInsert.rows[0].id;
+
+    for (let i = 1; i <= 3; i++) {
+      if (body[`member${i}_name`]) {
+        await pool.query(
+          "INSERT INTO members (team_id,name,email,phone,group_name) VALUES ($1,$2,$3,$4,$5)",
           [
             teamId,
-            members[`member${i}_name`],
-            members[`member${i}_email`],
-            members[`member${i}_phone`],
-            members[`member${i}_group`]
+            body[`member${i}_name`],
+            body[`member${i}_email`],
+            body[`member${i}_phone`],
+            body[`member${i}_group`],
           ]
         );
       }
     }
-    client.release();
-    res.json({message:"Application submitted successfully!"});
-  }catch(err){
-    console.error(err);
-    res.status(500).json({error:"Server error"});
-  }
-});
 
-export default router;
+    res.status(200).json({ message: "Application saved!" });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+}

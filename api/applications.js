@@ -1,42 +1,24 @@
-import express from "express";
-import pkg from "pg";
-const { Pool } = pkg;
+import { Pool } from "pg";
 
-const router = express.Router();
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-
-router.get("/", async (req, res) => {
-  try{
-    const client = await pool.connect();
-    const result = await client.query(
-      `SELECT t.id as team_id, t.team_name, t.idea, t.created_at, 
-      m.id as member_id, m.name, m.email, m.phone, m.group_name
-      FROM teams t
-      LEFT JOIN members m ON m.team_id = t.id
-      ORDER BY t.id, m.id`
-    );
-    client.release();
-    
-    // Group members by team
-    const teams = {};
-    result.rows.forEach(r=>{
-      if(!teams[r.team_id]){
-        teams[r.team_id] = { team_name:r.team_name, idea:r.idea, created_at:r.created_at, members:[] };
-      }
-      if(r.member_id){
-        teams[r.team_id].members.push({
-          name:r.name,
-          email:r.email,
-          phone:r.phone,
-          group:r.group_name
-        });
-      }
-    });
-    res.json(Object.values(teams));
-  }catch(err){
-    console.error(err);
-    res.status(500).json({error:"Server error"});
-  }
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false },
 });
 
-export default router;
+export default async function handler(req, res) {
+  try {
+    const teams = await pool.query("SELECT * FROM teams ORDER BY created_at DESC");
+
+    for (let team of teams.rows) {
+      const members = await pool.query(
+        "SELECT * FROM members WHERE team_id=$1",
+        [team.id]
+      );
+      team.members = members.rows;
+    }
+
+    res.status(200).json(teams.rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}

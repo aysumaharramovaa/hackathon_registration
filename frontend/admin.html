@@ -1,103 +1,61 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Hackathon Admin Panel</title>
-  <style>
-    body {
-      font-family: "Segoe UI", Arial, sans-serif;
-      background: #f0f4f8;
-      padding: 20px;
-    }
-    h1 {
-      text-align: center;
-      color: #0070f3;
-      margin-bottom: 20px;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-      background: #fff;
-      border-radius: 10px;
-      overflow: hidden;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    }
-    th, td {
-      padding: 12px;
-      border-bottom: 1px solid #ddd;
-      text-align: left;
-    }
-    th {
-      background: #0070f3;
-      color: white;
-    }
-    tr:hover {
-      background: #f1f7ff;
-    }
-    .member-block {
-      margin: 5px 0;
-      padding: 5px 10px;
-      background: #f9f9f9;
-      border-radius: 5px;
-    }
-  </style>
-</head>
-<body>
-  <h1>Hackathon Admin Panel</h1>
-  <table>
-    <thead>
-      <tr>
-        <th>Team Name</th>
-        <th>Idea</th>
-        <th>Members</th>
-        <th>Submitted At</th>
-      </tr>
-    </thead>
-    <tbody id="teamsTable">
-      <!-- Dynamic content -->
-    </tbody>
-  </table>
-
-  <script>
-    async function loadTeams() {
-      try {
-        const res = await fetch("/api/applications");
-        const teams = await res.json();
-
-        const tbody = document.getElementById("teamsTable");
-        tbody.innerHTML = "";
-
-        teams.forEach(team => {
-          const tr = document.createElement("tr");
-
-          // Members block
-          const membersDiv = document.createElement("div");
-          team.members.forEach((m, i) => {
-            const mb = document.createElement("div");
-            mb.className = "member-block";
-            mb.innerHTML = `<strong>Member ${i+1}:</strong> ${m.name}, ${m.email}, ${m.phone}, ${m.group}`;
-            membersDiv.appendChild(mb);
-          });
-
-          tr.innerHTML = `
-            <td>${team.team_name}</td>
-            <td>${team.idea}</td>
-            <td></td>
-            <td>${new Date(team.created_at).toLocaleString()}</td>
-          `;
-          tr.children[2].appendChild(membersDiv);
-          tbody.appendChild(tr);
-        });
-
-      } catch(err) {
-        console.error(err);
-        alert("Failed to load teams!");
+  <head>
+    <meta charset="UTF-8" />
+    <title>Admin Panel</title>
+    <style>
+      body {
+        font-family: Arial;
+        background: #f4f6f9;
+        padding: 20px;
       }
-    }
+      .card {
+        background: white;
+        padding: 20px;
+        margin-bottom: 20px;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+      }
+      h2 {
+        color: #0070f3;
+      }
+      .member {
+        margin-left: 20px;
+        color: #333;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Hackathon Applications</h1>
+    <div id="list"></div>
 
-    loadTeams();
-  </script>
-</body>
+    <script>
+      async function load() {
+        const res = await fetch("/api/applications");
+        const data = await res.json();
+        const list = document.getElementById("list");
+
+        data.forEach((team) => {
+          const div = document.createElement("div");
+          div.className = "card";
+          div.innerHTML = `
+      <h2>${team.team_name}</h2>
+      <p><strong>Idea:</strong> ${team.idea}</p>
+      <p><strong>Date:</strong> ${new Date(team.created_at).toLocaleString()}</p>
+      <h3>Members:</h3>
+      ${team.members
+        .map(
+          (m) => `
+        <div class="member">
+          ${m.name} | ${m.email} | ${m.phone} | ${m.group_name}
+        </div>`,
+        )
+        .join("")}
+    `;
+          list.appendChild(div);
+        });
+      }
+      load();
+    </script>
+  </body>
 </html>
