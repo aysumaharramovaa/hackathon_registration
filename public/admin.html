@@ -20,10 +20,10 @@
     <tr>
       <th>Team ID</th>
       <th>Team Name</th>
-      <th>Member Name</th>
-      <th>Email</th>
-      <th>Phone</th>
-      <th>Group</th>
+      <th>Members</th>
+      <th>Emails</th>
+      <th>Phones</th>
+      <th>Groups</th>
       <th>Idea</th>
       <th>Created At</th>
       <th>Actions</th>
@@ -58,22 +58,28 @@ async function fetchApplications(){
     tableBody.innerHTML = '';
 
     data.forEach(team => {
-      team.members.forEach(member => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-          <td>${team.id}</td>
-          <td>${team.team_name}</td>
-          <td>${member.name}</td>
-          <td>${member.email}</td>
-          <td>${member.phone}</td>
-          <td>${member.group_name}</td>
-          <td>${team.idea}</td>
-          <td>${new Date(team.created_at).toLocaleString()}</td>
-          <td><button class="delete">Sil</button></td>
-        `;
-        row.querySelector('.delete').addEventListener('click', ()=> deleteTeam(team.id));
-        tableBody.appendChild(row);
-      });
+      const row = document.createElement('tr');
+
+      // Bütün üzvləri bir sətrdə birləşdiririk
+      const memberNames = team.members.map(m => m.name).join(', ');
+      const memberEmails = team.members.map(m => m.email).join(', ');
+      const memberPhones = team.members.map(m => m.phone).join(', ');
+      const memberGroups = team.members.map(m => m.group_name).join(', ');
+
+      row.innerHTML = `
+        <td>${team.id}</td>
+        <td>${team.team_name}</td>
+        <td>${memberNames}</td>
+        <td>${memberEmails}</td>
+        <td>${memberPhones}</td>
+        <td>${memberGroups}</td>
+        <td>${team.idea}</td>
+        <td>${new Date(team.created_at).toLocaleString()}</td>
+        <td><button class="delete">Sil</button></td>
+      `;
+
+      row.querySelector('.delete').addEventListener('click', () => deleteTeam(team.id));
+      tableBody.appendChild(row);
     });
 
   } catch(err){
