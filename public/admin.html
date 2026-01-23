@@ -4,98 +4,44 @@
 <meta charset="UTF-8">
 <title>Hackathon Admin Panel</title>
 <style>
-  body { font-family: Arial; padding: 20px; }
-  table { border-collapse: collapse; width: 100%; margin-top: 20px; }
-  th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-  th { background: #f4f4f4; }
-  button.delete { background:#ff4d4f;color:white;border:none;padding:5px 10px;border-radius:4px;cursor:pointer;}
+  body{font-family:sans-serif;padding:20px;}
+  table{border-collapse:collapse;width:100%;}
+  th,td{border:1px solid #ccc;padding:8px;text-align:left;}
+  th{background:#f4f4f4;}
+  input{padding:5px;margin-bottom:10px;width:300px;}
 </style>
 </head>
 <body>
-
-<h1>Hackathon Admin Panel</h1>
-
-<table id="applicationsTable">
-  <thead>
-    <tr>
-      <th>Team ID</th>
-      <th>Team Name</th>
-      <th>Members</th>
-      <th>Emails</th>
-      <th>Phones</th>
-      <th>Groups</th>
-      <th>Idea</th>
-      <th>Created At</th>
-      <th>Actions</th>
-    </tr>
-  </thead>
-  <tbody></tbody>
+<h1>Admin Panel</h1>
+<input id="search" placeholder="Search...">
+<table>
+<thead>
+<tr><th>ID</th><th>Team</th><th>Idea</th><th>Members</th><th>Created At</th></tr>
+</thead>
+<tbody id="tbody"></tbody>
 </table>
 
 <script>
-const tableBody = document.querySelector('#applicationsTable tbody');
+const tbody=document.getElementById("tbody");
+const search=document.getElementById("search");
 
-async function fetchApplications(){
-  try {
-    const res = await fetch('/api/applications');
-    const data = await res.json();
-    tableBody.innerHTML = '';
-
-    data.forEach(team => {
-      const row = document.createElement('tr');
-
-      // Bütün üzvləri bir sətrdə birləşdiririk
-      const memberNames = team.members.map(m => m.name).join(', ');
-      const memberEmails = team.members.map(m => m.email).join(', ');
-      const memberPhones = team.members.map(m => m.phone).join(', ');
-      const memberGroups = team.members.map(m => m.group_name).join(', ');
-
-      row.innerHTML = `
-        <td>${team.id}</td>
-        <td>${team.team_name}</td>
-        <td>${memberNames}</td>
-        <td>${memberEmails}</td>
-        <td>${memberPhones}</td>
-        <td>${memberGroups}</td>
-        <td>${team.idea}</td>
-        <td>${new Date(team.created_at).toLocaleString()}</td>
-        <td><button class="delete">Sil</button></td>
-      `;
-
-      row.querySelector('.delete').addEventListener('click', () => deleteTeam(team.id));
-      tableBody.appendChild(row);
-    });
-
-  } catch(err){
-    console.error(err);
-    tableBody.innerHTML = '<tr><td colspan="9">Server error</td></tr>';
-  }
+async function fetchApps(){
+  const res=await fetch("/api/applications");
+  const data=await res.json();
+  tbody.innerHTML="";
+  data.forEach(team=>{
+    const members=team.members.map(m=>`${m.name} (${m.email}, ${m.phone}, ${m.group_name})`).join("<br>");
+    const tr=document.createElement("tr");
+    tr.innerHTML=`<td>${team.id}</td><td>${team.team_name}</td><td>${team.idea}</td><td>${members}</td><td>${new Date(team.created_at).toLocaleString()}</td>`;
+    tbody.appendChild(tr);
+  });
 }
-
-async function deleteTeam(teamId){
-  if(!confirm("Bu komandani silmək istədiyinizə əminsiniz?")) return;
-
-  try {
-    const res = await fetch('/api/applications', {
-      method:'DELETE',
-      headers: {
-        "Content-Type":"application/json"
-      },
-      body: JSON.stringify({teamId})
-    });
-
-    const data = await res.json();
-    alert(data.message || data.error);
-    fetchApplications();
-  } catch(err){
-    alert("Server error!");
-    console.error(err);
-  }
-}
-
-fetchApplications();
-setInterval(fetchApplications, 30000);
+fetchApps();
+search.oninput=()=> {
+  const val=search.value.toLowerCase();
+  Array.from(tbody.rows).forEach(row=>row.style.display=row.innerText.toLowerCase().includes(val)?"":"none");
+};
+setInterval(fetchApps,30000);
 </script>
-
 </body>
 </html>
