@@ -4,14 +4,12 @@
 <body>
 <h2>Applications</h2>
 <div id="data"></div>
-
 <script>
 fetch("/api/applications")
-.then(r=>r.json())
-.then(data=>{
-  document.getElementById("data").innerHTML =
-    "<pre>"+JSON.stringify(data,null,2)+"</pre>";
-});
+  .then(r=>r.json())
+  .then(data=>{
+    document.getElementById("data").innerHTML = "<pre>"+JSON.stringify(data,null,2)+"</pre>";
+  });
 </script>
 </body>
 </html>

@@ -1,33 +1,36 @@
 <!DOCTYPE html>
-<html>
+<html lang="az">
 <head>
-  <title>Hackathon Registration</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hackathon Registration</title>
 </head>
 <body>
-  <h2>Hackathon Registration</h2>
-
-  <form id="regForm">
-    <input name="team" placeholder="Team Name" required><br><br>
-    <div id="members"></div>
-    <button type="button" onclick="addMember()">+ Add Member</button><br><br>
-    <textarea name="idea" placeholder="Idea" required></textarea><br><br>
-    <button type="submit">Submit</button>
-  </form>
-
-  <p id="msg"></p>
+<h2>Hackathon Registration</h2>
+<form id="regForm">
+  <input name="team" placeholder="Team Name" required><br><br>
+  <div id="members"></div>
+  <button type="button" onclick="addMember()">+ Add Member</button><br><br>
+  <textarea name="idea" placeholder="Idea" required></textarea><br><br>
+  <button type="submit">Submit</button>
+</form>
+<p id="msg"></p>
 
 <script>
 let count = 0;
-function addMember(){
+function addMember() {
   if(count>=3) return alert("Max 3 members");
   count++;
-  document.getElementById("members").innerHTML += `
+  const div = document.createElement("div");
+  div.innerHTML = `
     <h4>Member ${count}</h4>
     <input name="member${count}_name" placeholder="Name" required>
     <input name="member${count}_email" placeholder="Email" required>
     <input name="member${count}_phone" placeholder="Phone" required>
-    <input name="member${count}_group" placeholder="Group" required><br><br>
+    <input name="member${count}_group" placeholder="Group" required>
+    <hr>
   `;
+  document.getElementById("members").appendChild(div);
 }
 addMember();
 
@@ -36,7 +39,7 @@ document.getElementById("regForm").onsubmit = async e => {
   const data = Object.fromEntries(new FormData(e.target).entries());
   const res = await fetch("/api/register", {
     method:"POST",
-    headers:{ "Content-Type":"application/json" },
+    headers:{"Content-Type":"application/json"},
     body: JSON.stringify(data)
   });
   const json = await res.json();
