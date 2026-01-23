@@ -1,15 +1,47 @@
 <!DOCTYPE html>
-<html>
-<head><title>Admin Panel</title></head>
+<html lang="az">
+<head>
+<meta charset="UTF-8">
+<title>Hackathon Admin Panel</title>
+<style>
+  body{font-family:sans-serif;padding:20px;}
+  table{border-collapse:collapse;width:100%;}
+  th,td{border:1px solid #ccc;padding:8px;text-align:left;}
+  th{background:#f4f4f4;}
+  input{padding:5px;margin-bottom:10px;width:300px;}
+</style>
+</head>
 <body>
-<h2>Applications</h2>
-<div id="data"></div>
+<h1>Admin Panel</h1>
+<input id="search" placeholder="Search...">
+<table>
+<thead>
+<tr><th>ID</th><th>Team</th><th>Idea</th><th>Members</th><th>Created At</th></tr>
+</thead>
+<tbody id="tbody"></tbody>
+</table>
+
 <script>
-fetch("/api/applications")
-  .then(r=>r.json())
-  .then(data=>{
-    document.getElementById("data").innerHTML = "<pre>"+JSON.stringify(data,null,2)+"</pre>";
+const tbody=document.getElementById("tbody");
+const search=document.getElementById("search");
+
+async function fetchApps(){
+  const res=await fetch("/api/applications");
+  const data=await res.json();
+  tbody.innerHTML="";
+  data.forEach(team=>{
+    const members=team.members.map(m=>`${m.name} (${m.email}, ${m.phone}, ${m.group_name})`).join("<br>");
+    const tr=document.createElement("tr");
+    tr.innerHTML=`<td>${team.id}</td><td>${team.team_name}</td><td>${team.idea}</td><td>${members}</td><td>${new Date(team.created_at).toLocaleString()}</td>`;
+    tbody.appendChild(tr);
   });
+}
+fetchApps();
+search.oninput=()=> {
+  const val=search.value.toLowerCase();
+  Array.from(tbody.rows).forEach(row=>row.style.display=row.innerText.toLowerCase().includes(val)?"":"none");
+};
+setInterval(fetchApps,30000);
 </script>
 </body>
 </html>

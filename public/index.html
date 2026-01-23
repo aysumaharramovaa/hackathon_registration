@@ -4,46 +4,73 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Hackathon Registration</title>
+<style>
+  body{font-family:sans-serif;padding:20px;background:#eef2f7;}
+  h1{color:#0070f3;text-align:center;}
+  form{background:#fff;padding:20px;border-radius:10px;max-width:600px;margin:auto;}
+  .member{border:1px solid #ccc;padding:10px;margin-top:10px;border-radius:8px;position:relative;}
+  .remove-btn{position:absolute;right:10px;top:10px;background:red;color:#fff;border:none;border-radius:5px;padding:2px 6px;cursor:pointer;}
+  input,textarea,button{width:100%;padding:10px;margin-top:5px;border-radius:6px;border:1px solid #ccc;}
+  button{background:#0070f3;color:#fff;border:none;margin-top:15px;cursor:pointer;}
+  button:hover{opacity:0.9;}
+</style>
 </head>
 <body>
-<h2>Hackathon Registration</h2>
+
+<h1>Hackathon Registration</h1>
 <form id="regForm">
-  <input name="team" placeholder="Team Name" required><br><br>
-  <div id="members"></div>
-  <button type="button" onclick="addMember()">+ Add Member</button><br><br>
-  <textarea name="idea" placeholder="Idea" required></textarea><br><br>
+  <input type="text" name="team" placeholder="Team Name" required>
+  <div id="membersContainer"></div>
+  <button type="button" id="addMemberBtn">+ Add Member</button>
+  <textarea name="idea" placeholder="Your Fintech Idea" required></textarea>
   <button type="submit">Submit</button>
 </form>
 <p id="msg"></p>
 
 <script>
+const membersContainer = document.getElementById("membersContainer");
+const addMemberBtn = document.getElementById("addMemberBtn");
+const form = document.getElementById("regForm");
+const msg = document.getElementById("msg");
 let count = 0;
-function addMember() {
-  if(count>=3) return alert("Max 3 members");
+const MAX = 3;
+
+function addMember(){
+  if(count>=MAX)return alert("Maximum 3 members!");
   count++;
   const div = document.createElement("div");
-  div.innerHTML = `
-    <h4>Member ${count}</h4>
-    <input name="member${count}_name" placeholder="Name" required>
-    <input name="member${count}_email" placeholder="Email" required>
+  div.className="member";
+  div.innerHTML=`
+    <h4>Member ${count} ${count>1?'<button type="button" class="remove-btn">Remove</button>':''}</h4>
+    <input name="member${count}_name" placeholder="Full Name" required>
+    <input name="member${count}_email" placeholder="Email" type="email" required>
     <input name="member${count}_phone" placeholder="Phone" required>
-    <input name="member${count}_group" placeholder="Group" required>
-    <hr>
+    <input name="member${count}_group" placeholder="Group / Major" required>
   `;
-  document.getElementById("members").appendChild(div);
+  if(count>1){
+    div.querySelector(".remove-btn").onclick = ()=>{
+      div.remove();
+      count--;
+      addMemberBtn.disabled=false;
+    };
+  }
+  membersContainer.appendChild(div);
+  if(count===MAX)addMemberBtn.disabled=true;
 }
-addMember();
 
-document.getElementById("regForm").onsubmit = async e => {
+addMemberBtn.onclick=addMember;
+addMember(); // first member
+
+form.onsubmit=async e=>{
   e.preventDefault();
-  const data = Object.fromEntries(new FormData(e.target).entries());
-  const res = await fetch("/api/register", {
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body: JSON.stringify(data)
-  });
-  const json = await res.json();
-  document.getElementById("msg").innerText = json.message || json.error;
+  const data=Object.fromEntries(new FormData(form).entries());
+  try{
+    const res=await fetch("/api/register",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(data)});
+    const json=await res.json();
+    msg.innerText=json.message||json.error;
+    msg.style.color=json.error?"red":"green";
+    if(!json.error){form.reset();membersContainer.innerHTML="";count=0;addMember();addMemberBtn.disabled=false;}
+  }catch(err){msg.innerText="Server error!";msg.style.color="red";}
 };
 </script>
 </body>
