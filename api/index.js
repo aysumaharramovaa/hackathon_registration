@@ -1,3 +1,11 @@
+const { Pool } = require('pg');
+
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false  
+  }
+});
 app.post("/api/register", async (req, res) => {
   const { fullname, email, phone, idea } = req.body;
   if (!fullname || !email || !phone || !idea) {
