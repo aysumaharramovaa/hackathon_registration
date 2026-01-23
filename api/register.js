@@ -41,6 +41,8 @@ export default async function handler(req, res) {
     }
 
     res.status(200).json({ message: "Application saved!" });
+    console.log("DATABASE_URL:", process.env.DATABASE_URL);
+
 
   } catch (err) {
     console.error(err);
