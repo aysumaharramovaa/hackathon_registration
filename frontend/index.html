@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Hackathon Registration</title>
+</head>
+<body>
+  <h1>Hackathon Registration</h1>
+  <form id="regForm">
+    <input type="text" name="fullname" placeholder="Full Name" required><br>
+    <input type="email" name="email" placeholder="Email" required><br>
+    <input type="text" name="phone" placeholder="Phone" required><br>
+    <textarea name="idea" placeholder="Your Idea" required></textarea><br>
+    <button type="submit">Submit</button>
+  </form>
+  <p id="message"></p>
+
+  <script>
+    const form = document.getElementById("regForm");
+    const message = document.getElementById("message");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const formData = {
+        fullname: form.fullname.value,
+        email: form.email.value,
+        phone: form.phone.value,
+        idea: form.idea.value
+      };
+
+      try {
+        const res = await fetch('https://hackathon-registration-seven.vercel.app/api/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData)
+        });
+
+        const data = await res.json();
+        message.textContent = data.message || data.error;
+      } catch (err) {
+        console.error(err);
+        message.textContent = "Server error!";
+      }
+    });
+  </script>
+</body>
+</html>

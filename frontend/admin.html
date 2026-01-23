@@ -2,20 +2,18 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Hackathon Admin Panel</title>
+  <title>Admin Panel</title>
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; }
+    body { font-family: Arial; padding: 20px; }
     table { border-collapse: collapse; width: 100%; margin-top: 20px; }
     th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
     th { background: #f4f4f4; }
-    input { padding: 5px; margin-bottom: 10px; width: 300px; }
+    input { padding: 5px; width: 300px; margin-bottom: 10px; }
   </style>
 </head>
 <body>
   <h1>Hackathon Admin Panel</h1>
-
-  <input type="text" id="searchInput" placeholder="Search by name, email, or idea...">
-
+  <input type="text" id="searchInput" placeholder="Search...">
   <table id="applicationsTable">
     <thead>
       <tr>
@@ -27,8 +25,7 @@
         <th>Created At</th>
       </tr>
     </thead>
-    <tbody>
-    </tbody>
+    <tbody></tbody>
   </table>
 
   <script>
@@ -39,7 +36,6 @@
       try {
         const res = await fetch('https://hackathon-registration-seven.vercel.app/api/applications');
         const data = await res.json();
-
         tableBody.innerHTML = '';
         data.forEach(app => {
           const row = document.createElement('tr');
@@ -54,23 +50,18 @@
           tableBody.appendChild(row);
         });
       } catch (err) {
-        console.error('Error fetching applications:', err);
+        console.error(err);
         tableBody.innerHTML = '<tr><td colspan="6">Failed to load applications</td></tr>';
       }
     }
 
     fetchApplications();
-
-
     searchInput.addEventListener('input', () => {
       const filter = searchInput.value.toLowerCase();
       Array.from(tableBody.rows).forEach(row => {
-        const text = row.innerText.toLowerCase();
-        row.style.display = text.includes(filter) ? '' : 'none';
+        row.style.display = row.innerText.toLowerCase().includes(filter) ? '' : 'none';
       });
     });
-
-    
     setInterval(fetchApplications, 30000);
   </script>
 </body>
