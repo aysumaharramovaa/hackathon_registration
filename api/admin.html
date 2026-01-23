@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Hackathon Admin Panel</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    th { background: #f4f4f4; }
+    input { padding: 5px; margin-bottom: 10px; width: 300px; }
+  </style>
+</head>
+<body>
+  <h1>Hackathon Admin Panel</h1>
+
+  <input type="text" id="searchInput" placeholder="Search by name, email, or idea...">
+
+  <table id="applicationsTable">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Full Name</th>
+        <th>Email</th>
+        <th>Phone</th>
+        <th>Idea</th>
+        <th>Created At</th>
+      </tr>
+    </thead>
+    <tbody>
+    </tbody>
+  </table>
+
+  <script>
+    const tableBody = document.querySelector('#applicationsTable tbody');
+    const searchInput = document.getElementById('searchInput');
+
+    async function fetchApplications() {
+      try {
+        const res = await fetch('https://hackathon-registration-seven.vercel.app/applications');
+        const data = await res.json();
+
+        tableBody.innerHTML = '';
+        data.forEach(app => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${app.id}</td>
+            <td>${app.fullname}</td>
+            <td>${app.email}</td>
+            <td>${app.phone}</td>
+            <td>${app.idea}</td>
+            <td>${new Date(app.created_at).toLocaleString()}</td>
+          `;
+          tableBody.appendChild(row);
+        });
+      } catch (err) {
+        console.error('Error fetching applications:', err);
+        tableBody.innerHTML = '<tr><td colspan="6">Failed to load applications</td></tr>';
+      }
+    }
+
+    fetchApplications();
+
+
+    searchInput.addEventListener('input', () => {
+      const filter = searchInput.value.toLowerCase();
+      Array.from(tableBody.rows).forEach(row => {
+        const text = row.innerText.toLowerCase();
+        row.style.display = text.includes(filter) ? '' : 'none';
+      });
+    });
+
+    
+    setInterval(fetchApplications, 30000);
+  </script>
+</body>
+</html>
